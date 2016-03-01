@@ -28,6 +28,15 @@ public class AutoResizeTextView extends TextView {
     private int _widthLimit, _maxLines;
     private boolean _initialized = false;
     private TextPaint _paint;
+    private TextSizeChangeListener _textSizeChangeListener;
+
+    public interface TextSizeChangeListener {
+        /**
+         * Called when the text size is adjusted
+         * @param textSize the new visible text size;
+         */
+        void onTextSizeChanged(float textSize);
+    }
 
     private interface SizeTester {
         /**
@@ -158,6 +167,13 @@ public class AutoResizeTextView extends TextView {
         _spacingAdd = add;
     }
 
+    public void setTextSizeChangeListener(TextSizeChangeListener textSizeChangeListener) {
+        _textSizeChangeListener = textSizeChangeListener;
+        if (_textSizeChangeListener != null) {
+            _textSizeChangeListener.onTextSizeChanged(super.getTextSize());
+        }
+    }
+
     /**
      * Set the lower text size limit and invalidate the view
      *
@@ -194,6 +210,9 @@ public class AutoResizeTextView extends TextView {
     private void superSetTextSize(int startSize) {
         int textSize = binarySearch(startSize, (int) _maxTextSize, _sizeTester, _availableSpaceRect);
         super.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
+        if (_textSizeChangeListener != null) {
+            _textSizeChangeListener.onTextSizeChanged(super.getTextSize());
+        }
     }
 
     private int binarySearch(final int start, final int end, final SizeTester sizeTester, final RectF availableSpace) {
